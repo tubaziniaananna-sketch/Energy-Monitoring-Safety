@@ -442,15 +442,15 @@
 
 <script>
   const FIREBASE_CONFIG = {
-    apiKey:      "YOUR_API_KEY_HERE",   // ← paste your Web API Key
+    apiKey:      "AIzaSyCRmRyXQjNDPPTSjPjCTQcanGm183rW9dw",   // ← paste your Web API Key
     databaseURL: "https://energy-monitoring-and-safety-default-rtdb.asia-southeast1.firebasedatabase.app",
   };
 
-  /* DB node paths — Includes Relay control field */
+  /* ── UPDATED DB NODE PATHS based on your latest JSON ── */
   const DEVICES = [
-    { key: 'Device-1', num: 1, vField: 'Voltage1', aField: 'Current1', emField: 'Emergency1', rField: 'Relay1' },
-    { key: 'Device-2', num: 2, vField: 'Voltage2', aField: 'Current2', emField: 'Emergency2', rField: 'Relay2' },
-    { key: 'Device-3', num: 3, vField: 'Voltage3', aField: 'Current3', emField: 'Emergency3', rField: 'Relay3' },
+    { key: 'Device-1', num: 1, vField: 'Voltage1', aField: 'Current1', emField: 'Emergency1', rField: 'isOn' },
+    { key: 'Device-2', num: 2, vField: 'Voltage2', aField: 'Current2', emField: 'Emergency2', rField: 'isOn' },
+    { key: 'Device-3', num: 3, vField: 'Voltage3', aField: 'Current3', emField: 'Emergency3', rField: 'isOn' },
   ];
 
   const V_MAX = 260; 
@@ -500,8 +500,8 @@
 
         const v  = parseFloat(data[dev.vField]  ?? 0) || 0;
         const a  = parseFloat(data[dev.aField]  ?? 0) || 0;
-        const em = parseEmergency(data[dev.emField]);
-        const r  = parseEmergency(data[dev.rField]); 
+        const em = parseBool(data[dev.emField]);
+        const r  = parseBool(data[dev.rField]); 
 
         currentRelayStates[dev.num] = r;
 
@@ -511,7 +511,7 @@
     });
   }
 
-  function parseEmergency(val) {
+  function parseBool(val) {
     if (val == null) return false;
     if (typeof val === 'boolean') return val;
     const s = String(val).toLowerCase().trim();
@@ -586,7 +586,7 @@
     emEl.textContent = emCount;
     emEl.style.color = emCount > 0 ? 'var(--danger)' : 'var(--safe)';
 
-    // NEW: Enable/Disable the global cancel button based on active emergencies
+    // Enable/Disable the global cancel button based on active emergencies
     const clearBtn = document.getElementById('btn-clear-alerts');
     if (emCount > 0) {
       clearBtn.disabled = false;
@@ -620,7 +620,7 @@
 
     DEVICES.forEach(dev => {
       updates[`Device/${dev.key}/${dev.emField}`] = false;
-      updates[`Device/${dev.key}/${dev.rField}`] = true; // Automatically turn relays back ON
+      updates[`Device/${dev.key}/${dev.rField}`] = true; // Automatically turn relays back ON (isOn: true)
     });
 
     db.ref().update(updates).then(() => {
